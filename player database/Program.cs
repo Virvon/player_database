@@ -77,17 +77,21 @@ namespace player_database
         static void DeleteUser(Database database)
         {
             bool isExit = false;
+
             Console.Clear();
             int userId = CheckNumber("Введите ID пользователя, которого хотите удалить", ref isExit);
-            if(isExit == false)
+
+            if (isExit == false)
                 database.DeleteUser(userId);
         }
 
         static void BanUser (Database database)
         {
             bool isExit = false;
+
             Console.Clear();
             int userId = CheckNumber("Введите ID пользователя, которого хотите забанить", ref isExit);
+
             if(isExit == false)
                 database.BanUser(userId);
         }
@@ -95,8 +99,10 @@ namespace player_database
         static void UnbanUser(Database database)
         {
             bool isExit = false;
+
             Console.Clear();
             int userId = CheckNumber("Введите ID пользователя, которого хотите забанить", ref isExit);
+
             if (isExit == false)
                 database.UnbanUser(userId);
         }
