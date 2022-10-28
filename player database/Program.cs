@@ -10,6 +10,23 @@ namespace player_database
     {
         static void Main(string[] args)
         {
+            Database database = new Database();
+
+            database.Work();
+        }
+    }
+
+    class Database
+    {
+        private List<User> _users;
+
+        public Database()
+        {
+            _users = new List<User>();
+        }
+
+        public void Work()
+        {
             const string CommandShowUsers = "1";
             const string commandAddUser = "2";
             const string commandDeleteUser = "3";
@@ -17,9 +34,8 @@ namespace player_database
             const string commandUnbanUser = "5";
             const string commandExit = "6";
             bool isFinish = false;
-            Database database = new Database();
 
-            while(isFinish == false)
+            while (isFinish == false)
             {
                 Console.WriteLine("Игроки сервера\n");
                 Console.Write($"Выберите команду:\n{CommandShowUsers}. Вывести список пользователей\n{commandAddUser}. Добавить пользователя\n{commandDeleteUser}. Удалить пользователя\n{commandBanUser}. Забанить пользователя\n{commandUnbanUser}. Разбанить пользователя\n{commandExit}. Выйти\nВведите номер команды: ");
@@ -27,19 +43,19 @@ namespace player_database
                 switch (Console.ReadLine())
                 {
                     case CommandShowUsers:
-                        database.ShowUsers();
+                        ShowUsers();
                         break;
                     case commandAddUser:
-                        AddUser(database);
+                        AddUser();
                         break;
                     case commandDeleteUser:
-                        DeleteUser(database);
+                        DeleteUser();
                         break;
                     case commandBanUser:
-                        BanUser(database);
+                        BanUser();
                         break;
                     case commandUnbanUser:
-                        UnbanUser(database);
+                        UnbanUser();
                         break;
                     case commandExit:
                         isFinish = true;
@@ -55,94 +71,13 @@ namespace player_database
             }
         }
 
-        static void AddUser(Database database)
+        private void ShowUsers()
         {
-            const string CommandCancel = "exit";
-            string userName;
-            bool isExit = false;
-
             Console.Clear();
-            Console.Write($"Введите имя пользователя (или {CommandCancel} для отмены): ");
-            userName = Console.ReadLine();
 
-            if (userName == CommandCancel)
-                return;
-
-            int userLevel = CheckNumber("Введите уровень пользователя", ref isExit);
-
-            if (isExit == false)
-                database.CreateUser(userName, userLevel);
-        }
-
-        static void DeleteUser(Database database)
-        {
-            bool isExit = false;
-
-            Console.Clear();
-            int userId = CheckNumber("Введите ID пользователя, которого хотите удалить", ref isExit);
-
-            if (isExit == false)
-                database.DeleteUser(userId);
-        }
-
-        static void BanUser (Database database)
-        {
-            bool isExit = false;
-
-            Console.Clear();
-            int userId = CheckNumber("Введите ID пользователя, которого хотите забанить", ref isExit);
-
-            if(isExit == false)
-                database.BanUser(userId);
-        }
-
-        static void UnbanUser(Database database)
-        {
-            bool isExit = false;
-
-            Console.Clear();
-            int userId = CheckNumber("Введите ID пользователя, которого хотите забанить", ref isExit);
-
-            if (isExit == false)
-                database.UnbanUser(userId);
-        }
-
-        static int CheckNumber(string textContinuation, ref bool isExit)
-        {
-            const string CommandCancel = "exit";
-            const string textError = "Некоректная команда";
-            int result = 0;
-            bool isNumber = false;
-
-            while (isNumber == false)
+            foreach (var user in _users)
             {
-                Console.Write($"{textContinuation} (или {CommandCancel} для отмены): ");
-                string input = Console.ReadLine();
-
-                if (input == CommandCancel)
-                {
-                    isExit = true;
-                    break;
-                }
-                else if (int.TryParse(input, out result))
-                    isNumber = true;
-                else
-                    Console.WriteLine(textError);
-            }
-
-            return result;
-        }
-    }
-
-    class Database
-    {
-        private List<User> users = new List<User>();
-
-        public void ShowUsers ()
-        {
-            foreach(var user in users)
-            {
-                Console.Write($"{users.IndexOf(user) + 1}. {user.Name}: уровень {user.Level}, ID {user.Id}");
+                Console.Write($"{_users.IndexOf(user) + 1}. {user.Name}: уровень {user.Level}, ID {user.Id}");
 
                 if (user.IsBanned)
                     Console.Write(", забанен");
@@ -155,47 +90,82 @@ namespace player_database
         {
             User desiredUser = null;
 
-            foreach(var user in users)
+            foreach (var user in _users)
             {
-                if(user.Id == desiredId)
+                if (user.Id == desiredId)
                     desiredUser = user;
             }
 
             return desiredUser;
         }
 
-        public void CreateUser(string name, int level)
+        private void AddUser()
         {
-            users.Add(new User(name, level));
+            Console.Clear();
+            Console.Write($"Введите имя пользователя: ");
+
+            string userName = Console.ReadLine();
+            int userLevel = CheckNumber("Введите уровень пользователя");
+
+            _users.Add(new User(userName, userLevel));
         }
 
-        public void DeleteUser(int deleteId)
+        private void DeleteUser()
         {
-            users.Remove(FindUser(deleteId));
+            Console.Clear();
+
+            int userId = CheckNumber("Введите ID пользователя, которого хотите удалить");
+
+            _users.Remove(FindUser(userId));
         }
 
-        public void BanUser(int banId)
+        private void BanUser()
         {
-            User user = FindUser(banId);
-            
-            if(user == null)
-                Console.WriteLine("Пользователь не найден");
-            else if (user.IsBanned == false)
-                user.ChangeBanStatus();
-            else 
-                Console.WriteLine("Пользователь уже забанен");
-        }
+            Console.Clear();
 
-        public void UnbanUser(int unbanId)
-        {
-            User user = FindUser(unbanId);
+            int userId = CheckNumber("Введите ID пользователя, которого хотите забанить");
+            User user = FindUser(userId);
 
             if (user == null)
                 Console.WriteLine("Пользователь не найден");
-            else if (user.IsBanned)
-                user.ChangeBanStatus();
+            else if (user.IsBanned == false)
+                user.BanUser();
+            else
+                Console.WriteLine("Пользователь уже забанен");
+        }
+
+        private void UnbanUser()
+        {
+            Console.Clear();
+
+            int userId = CheckNumber("Введите ID пользователя, которого хотите разбанить");
+            User user = FindUser(userId);
+
+            if (user == null)
+                Console.WriteLine("Пользователь не найден");
+            else if (user.IsBanned == true)
+                user.UnbanUser();
             else
                 Console.WriteLine("Пользователь не забанен");
+        }
+
+        private int CheckNumber(string textContinuation)
+        {
+            int result = 0;
+            bool isNumber = false;
+
+            while (isNumber == false)
+            {
+                Console.Write($"{textContinuation}: ");
+                string input = Console.ReadLine();
+
+                if (int.TryParse(input, out result))
+                    isNumber = true;
+                else
+                    Console.WriteLine("Некоректная команда");
+            }
+
+            return result;
         }
     }
 
@@ -216,12 +186,14 @@ namespace player_database
             IsBanned = false;
         }
 
-        public void ChangeBanStatus()
+        public void BanUser()
         {
-            if (IsBanned)
-                IsBanned = false;
-            else
-                IsBanned = true;
+            IsBanned = true;
+        }
+
+        public void UnbanUser()
+        {
+            IsBanned = false;
         }
     }
 }
