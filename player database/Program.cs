@@ -19,10 +19,12 @@ namespace player_database
     class Database
     {
         private List<User> _users;
+        private int _lastId;
 
         public Database()
         {
             _users = new List<User>();
+            _lastId = 0;
         }
 
         public void Work()
@@ -75,28 +77,10 @@ namespace player_database
         {
             Console.Clear();
 
-            foreach (var user in _users)
+            for(int i = 0; i < _users.Count; i++)
             {
-                Console.Write($"{_users.IndexOf(user) + 1}. {user.Name}: уровень {user.Level}, ID {user.Id}");
-
-                if (user.IsBanned)
-                    Console.Write(", забанен");
-
-                Console.WriteLine();
+                _users[i].ShowInfo(i);
             }
-        }
-
-        private User FindUser(int desiredId)
-        {
-            User desiredUser = null;
-
-            foreach (var user in _users)
-            {
-                if (user.Id == desiredId)
-                    desiredUser = user;
-            }
-
-            return desiredUser;
         }
 
         private void AddUser()
@@ -105,26 +89,25 @@ namespace player_database
             Console.Write($"Введите имя пользователя: ");
 
             string userName = Console.ReadLine();
-            int userLevel = CheckNumber("Введите уровень пользователя");
+            int userLevel = ReadInt("Введите уровень пользователя");
 
-            _users.Add(new User(userName, userLevel));
+            _lastId++;
+
+            _users.Add(new User(userName, userLevel, _lastId));
         }
 
         private void DeleteUser()
         {
             Console.Clear();
 
-            int userId = CheckNumber("Введите ID пользователя, которого хотите удалить");
-
-            _users.Remove(FindUser(userId));
+            _users.Remove(TryGetUser("Введите ID пользователя, которого хотите удалить"));
         }
 
         private void BanUser()
         {
             Console.Clear();
 
-            int userId = CheckNumber("Введите ID пользователя, которого хотите забанить");
-            User user = FindUser(userId);
+            User user = TryGetUser("Введите ID пользователя, которого хотите забанить");
 
             if (user == null)
                 Console.WriteLine("Пользователь не найден");
@@ -138,8 +121,7 @@ namespace player_database
         {
             Console.Clear();
 
-            int userId = CheckNumber("Введите ID пользователя, которого хотите разбанить");
-            User user = FindUser(userId);
+            User user = TryGetUser("Введите ID пользователя, которого хотите разбанить");
 
             if (user == null)
                 Console.WriteLine("Пользователь не найден");
@@ -149,7 +131,7 @@ namespace player_database
                 Console.WriteLine("Пользователь не забанен");
         }
 
-        private int CheckNumber(string textContinuation)
+        private int ReadInt(string textContinuation)
         {
             int result = 0;
             bool isNumber = false;
@@ -157,6 +139,7 @@ namespace player_database
             while (isNumber == false)
             {
                 Console.Write($"{textContinuation}: ");
+
                 string input = Console.ReadLine();
 
                 if (int.TryParse(input, out result))
@@ -167,6 +150,20 @@ namespace player_database
 
             return result;
         }
+
+        private User TryGetUser(string textContinuation)
+        {
+            int desiredId = ReadInt(textContinuation);
+            User desiredUser = null;
+
+            foreach (var user in _users)
+            {
+                if (user.Id == desiredId)
+                    desiredUser = user;
+            }
+
+            return desiredUser;
+        }
     }
 
     class User
@@ -176,11 +173,9 @@ namespace player_database
         public int Level { get; private set; }
         public bool IsBanned { get; private set; }
 
-        static int id;
-
-        public User(string name, int level)
+        public User(string name, int level, int id)
         {
-            Id = ++id;
+            Id = id;
             Name = name;
             Level = level;
             IsBanned = false;
@@ -194,6 +189,16 @@ namespace player_database
         public void UnbanUser()
         {
             IsBanned = false;
+        }
+
+        public void ShowInfo(int index)
+        {
+            Console.Write($"{index + 1}. {Name}: уровень {Level}, ID {Id}");
+
+            if (IsBanned)
+                Console.Write(", забанен");
+
+            Console.WriteLine();
         }
     }
 }
