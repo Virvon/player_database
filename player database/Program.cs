@@ -100,19 +100,19 @@ namespace player_database
         {
             Console.Clear();
 
-            _users.Remove(TryGetUser("Введите ID пользователя, которого хотите удалить"));
+            _users.Remove(GetUser("Введите ID пользователя, которого хотите удалить"));
         }
 
         private void BanUser()
         {
             Console.Clear();
 
-            User user = TryGetUser("Введите ID пользователя, которого хотите забанить");
+            User user = GetUser("Введите ID пользователя, которого хотите забанить");
 
             if (user == null)
                 Console.WriteLine("Пользователь не найден");
             else if (user.IsBanned == false)
-                user.BanUser();
+                user.Ban();
             else
                 Console.WriteLine("Пользователь уже забанен");
         }
@@ -121,12 +121,12 @@ namespace player_database
         {
             Console.Clear();
 
-            User user = TryGetUser("Введите ID пользователя, которого хотите разбанить");
+            User user = GetUser("Введите ID пользователя, которого хотите разбанить");
 
             if (user == null)
                 Console.WriteLine("Пользователь не найден");
             else if (user.IsBanned == true)
-                user.UnbanUser();
+                user.Unban();
             else
                 Console.WriteLine("Пользователь не забанен");
         }
@@ -151,7 +151,7 @@ namespace player_database
             return result;
         }
 
-        private User TryGetUser(string textContinuation)
+        private User GetUser(string textContinuation)
         {
             int desiredId = ReadInt(textContinuation);
             User desiredUser = null;
@@ -181,12 +181,12 @@ namespace player_database
             IsBanned = false;
         }
 
-        public void BanUser()
+        public void Ban()
         {
             IsBanned = true;
         }
 
-        public void UnbanUser()
+        public void Unban()
         {
             IsBanned = false;
         }
